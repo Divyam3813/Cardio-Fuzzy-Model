@@ -2,7 +2,7 @@
 
 ## 🚀 Live Demo
 
-🔗 [Launch CardioFuzzy AI](https://your-app-name.streamlit.app) *(replace with your deployed Streamlit Cloud link)*
+🔗 [Launch CardioFuzzy AI](https://cardio-fuzzy.streamlit.app/) 
 
 ## 📖 Project Overview
 
