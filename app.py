@@ -361,11 +361,14 @@ st.markdown("---")
 st.markdown("### 💬 Chat with Dr. Cardio 🩺")
 st.markdown("Ask Dr. Cardio for heart-healthy tips, workout adjustments, or dietary suggestions tailored to your live risk score.")
 
-# Securely load API key from Streamlit secrets
+# Securely load API key from Streamlit secrets or fallback
 try:
     GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
 except Exception:
-    GEMINI_API_KEY = None
+    try:
+        from config_keys import GEMINI_API_KEY
+    except ImportError:
+        GEMINI_API_KEY = None
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
