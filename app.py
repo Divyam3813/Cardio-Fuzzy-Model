@@ -363,9 +363,15 @@ st.markdown("Ask Dr. Cardio for heart-healthy tips, workout adjustments, or diet
 
 # Import API key securely from config_keys.py
 try:
-    from config_keys import GEMINI_API_KEY
-except ImportError:
-    GEMINI_API_KEY = None
+    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    try:
+        from config_keys import GEMINI_API_KEY
+    except ImportError:
+        GEMINI_API_KEY = None
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
