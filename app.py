@@ -361,14 +361,11 @@ st.markdown("---")
 st.markdown("### 💬 Chat with Dr. Cardio 🩺")
 st.markdown("Ask Dr. Cardio for heart-healthy tips, workout adjustments, or dietary suggestions tailored to your live risk score.")
 
-# Import API key securely from config_keys.py
+# Securely load API key from Streamlit secrets
 try:
     GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
 except Exception:
-    try:
-        from config_keys import GEMINI_API_KEY
-    except ImportError:
-        GEMINI_API_KEY = None
+    GEMINI_API_KEY = None
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -405,7 +402,7 @@ if prompt := st.chat_input("Ask Dr. Cardio about diet, exercise, or heart health
                     st.session_state.chat_summary = summary_res.text
 
                 system_instruction = (
-                    f"You are Dr. Cardio, a friendly, empathetic, and knowledgeable cardiovascular health and wellness assistant. "
+                    f"You are Dr. Cardio, a friendly, empathetic, and knowledgeable cardiovascular health and wellness expert. "
                     f"The user's recent model evaluation yielded a live risk score of {risk_context}% ({class_context}). "
                     f"Conversation Memory Summary: {st.session_state.chat_summary}. "
                     f"Provide actionable, encouraging lifestyle advice regarding diet, exercise, sleep, and stress management. "
