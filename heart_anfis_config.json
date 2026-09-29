@@ -1,0 +1,53 @@
+{
+  "features": [
+    "cp",
+    "thalach",
+    "oldpeak",
+    "exang",
+    "ca",
+    "thal"
+  ],
+  "target": "target",
+  "normalization": {
+    "mean": [
+      0.94266055045871555,
+      149.04701834862385,
+      1.0709862385321098,
+      0.33371559633027525,
+      0.73853211009174313,
+      2.334862385321101
+    ],
+    "std": [
+      1.0272593633946105,
+      23.248398392984587,
+      1.1820878762711198,
+      0.47181010778139854,
+      1.0201108205600944,
+      0.61011393741803011
+    ],
+    "clipMin": -5,
+    "clipMax": 5
+  },
+  "model": {
+    "clusterRadius": 0.35,
+    "epochs": 75,
+    "numberOfRules": 13
+  },
+  "decision": {
+    "threshold": 0.38
+  },
+  "performance": {
+    "test": {
+      "accuracy": 0.90849673202614378,
+      "precision": 0.88095238095238093,
+      "recall": 0.94871794871794868,
+      "specificity": 0.8666666666666667,
+      "f1": 0.9135802469135802,
+      "balancedAccuracy": 0.90769230769230769,
+      "rocAUC": 0.97982905982905977,
+      "rmse": 0.24737232041877841,
+      "brierScore": 0.061193064909370778
+    }
+  },
+  "description": "ANFIS binary heart disease model. 0-100 output is a model risk score, not a clinically validated probability."
+}
