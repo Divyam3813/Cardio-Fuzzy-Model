@@ -1,6 +1,4 @@
 streamlit 
 pandas 
 numpy 
-plotly 
-pandas-stubs
-scikit-learn
+google-genai
