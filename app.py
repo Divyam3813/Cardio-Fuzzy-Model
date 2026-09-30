@@ -86,6 +86,9 @@ RULES = fis["rules"]
 AND_METHOD = fis.get("andMethod", "prod").lower()
 OR_METHOD = fis.get("orMethod", "probor").lower()
 
+# Gemini model used by the chatbot (change it here only)
+GEMINI_MODEL = "gemini-3.8-flash"
+
 # ============================================================
 # GAUSSIAN MEMBERSHIP FUNCTION (100% ORIGINAL CALCULATION)
 # ============================================================
@@ -373,9 +376,6 @@ except Exception:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
 if "chat_summary" not in st.session_state:
     st.session_state.chat_summary = "No prior interaction."
 
@@ -390,43 +390,45 @@ if prompt := st.chat_input("Ask Dr. Cardio about diet, exercise, or heart health
 
     with st.chat_message("assistant"):
         if not GEMINI_API_KEY or GEMINI_API_KEY == "your_actual_gemini_api_key_here":
-            st.error("Please add your valid Gemini API key inside `config_keys.py`.")
+            st.error("Gemini API key not found. Please add `GEMINI_API_KEY` in your Streamlit secrets.")
         else:
             try:
                 from google import genai
+                from google.genai import types
                 client = genai.Client(api_key=GEMINI_API_KEY)
-                
+
                 risk_context = st.session_state.get("last_risk", "not yet evaluated")
                 class_context = st.session_state.get("last_classification", "Unknown")
-                
-                if len(st.session_state.messages) > 4:
-                    summary_prompt = f"Summarize key medical/wellness points from this chat history concisely: {str(st.session_state.messages[-6:])}"
-                    summary_res = client.models.generate_content(model='gemini-2.5-flash', contents=summary_prompt)
-                    st.session_state.chat_summary = summary_res.text
 
                 system_instruction = (
                     f"You are Dr. Cardio, a friendly, empathetic, and knowledgeable cardiovascular health and wellness expert. "
                     f"The user's recent model evaluation yielded a live risk score of {risk_context}% ({class_context}). "
-                    f"Conversation Memory Summary: {st.session_state.chat_summary}. "
                     f"Provide actionable, encouraging lifestyle advice regarding diet, exercise, sleep, and stress management. "
-                    f"Always remind them that this is for educational purposes only, it can make mistakes, and they should consult a real doctor for proper diagnosis."
+                    f"Keep every reply concise: under 150 words, a few short points at most. "
+                    f"End with one short reminder that this is for educational purposes only, it can make mistakes, and they should consult a real doctor for proper diagnosis."
                 )
-                
-                contents = [system_instruction]
-                for m in st.session_state.messages:
-                    contents.append(f"{m['role']}: {m['content']}")
+
+                # Only the last 8 messages are sent, so input size stays small
+                contents = [f"{m['role']}: {m['content']}" for m in st.session_state.messages[-8:]]
 
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model=GEMINI_MODEL,
                     contents=contents,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        max_output_tokens=1000,
+                    ),
                 )
-                
+
                 ai_response = response.text
                 st.markdown(ai_response)
                 st.session_state.messages.append({"role": "assistant", "content": ai_response})
-                
+
             except Exception as e:
-                st.error(f"Error communicating with Gemini API: {e}")
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                    st.error("Dr. Cardio has hit the API usage limit for now. Please try again later.")
+                else:
+                    st.error(f"Error communicating with Gemini API: {e}")
 
 # ============================================================
 # FOOTER
