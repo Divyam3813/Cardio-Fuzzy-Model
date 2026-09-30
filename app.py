@@ -1,4 +1,5 @@
 import json
+import time
 import numpy as np
 import streamlit as st
 
@@ -86,8 +87,29 @@ RULES = fis["rules"]
 AND_METHOD = fis.get("andMethod", "prod").lower()
 OR_METHOD = fis.get("orMethod", "probor").lower()
 
-# Gemini model used by the chatbot (change it here only)
-GEMINI_MODEL = "gemini-3.8-flash"
+# Models are tried in order. If the first is busy or unavailable, the next is used.
+GEMINI_MODELS = ["gemini-3.8-flash", "gemini-2.5-flash-lite"]
+
+def generate_with_retry(client, contents, config, retries=3):
+    last_error = None
+    for model_name in GEMINI_MODELS:
+        for attempt in range(retries):
+            try:
+                return client.models.generate_content(
+                    model=model_name,
+                    contents=contents,
+                    config=config,
+                )
+            except Exception as e:
+                last_error = e
+                msg = str(e)
+                if "503" in msg or "UNAVAILABLE" in msg:
+                    time.sleep(2 ** attempt)  # wait 1s, 2s, 4s then retry
+                    continue
+                if "404" in msg or "NOT_FOUND" in msg:
+                    break  # this model is not available, try the next one
+                raise  # 429 and other errors are handled by the caller
+    raise last_error
 
 # ============================================================
 # GAUSSIAN MEMBERSHIP FUNCTION (100% ORIGINAL CALCULATION)
@@ -411,10 +433,10 @@ if prompt := st.chat_input("Ask Dr. Cardio about diet, exercise, or heart health
                 # Only the last 8 messages are sent, so input size stays small
                 contents = [f"{m['role']}: {m['content']}" for m in st.session_state.messages[-8:]]
 
-                response = client.models.generate_content(
-                    model=GEMINI_MODEL,
-                    contents=contents,
-                    config=types.GenerateContentConfig(
+                response = generate_with_retry(
+                    client,
+                    contents,
+                    types.GenerateContentConfig(
                         system_instruction=system_instruction,
                         max_output_tokens=1000,
                     ),
@@ -425,8 +447,11 @@ if prompt := st.chat_input("Ask Dr. Cardio about diet, exercise, or heart health
                 st.session_state.messages.append({"role": "assistant", "content": ai_response})
 
             except Exception as e:
-                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                err = str(e)
+                if "429" in err or "RESOURCE_EXHAUSTED" in err:
                     st.error("Dr. Cardio has hit the API usage limit for now. Please try again later.")
+                elif "503" in err or "UNAVAILABLE" in err:
+                    st.error("Gemini is very busy right now. Please try again in a minute.")
                 else:
                     st.error(f"Error communicating with Gemini API: {e}")
 
