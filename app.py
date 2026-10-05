@@ -88,7 +88,7 @@ AND_METHOD = fis.get("andMethod", "prod").lower()
 OR_METHOD = fis.get("orMethod", "probor").lower()
 
 # Models are tried in order. If the first is busy or unavailable, the next is used.
-GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-pro"]
+GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.1-pro-preview"]
 
 def generate_with_retry(client, contents, config, retries=3):
     last_error = None
