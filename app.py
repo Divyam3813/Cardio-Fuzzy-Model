@@ -2,10 +2,7 @@ import json
 import time
 import numpy as np
 import streamlit as st
-
-# ============================================================
 # PAGE CONFIG & VIBRANT STYLING
-# ============================================================
 
 st.set_page_config(
     page_title="Dr. Cardio — Clinical Diagnostic Suite",
@@ -49,11 +46,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
-# ============================================================
 # LOAD MODEL FILES
-# ============================================================
-
 @st.cache_data
 def load_json(path):
     with open(path, "r", encoding="utf-8") as f:
@@ -68,10 +61,7 @@ except FileNotFoundError as e:
 except Exception as e:
     st.error(f"Could not load model files: {e}")
     st.stop()
-
-# ============================================================
 # MODEL CONFIGURATION
-# ============================================================
 
 FEATURES = config["features"]
 MEAN = np.asarray(config["normalization"]["mean"], dtype=float)
@@ -110,10 +100,7 @@ def generate_with_retry(client, contents, config, retries=3):
                     break  # this model is not available, try the next one
                 raise  # 429 and other errors are handled by the caller
     raise last_error
-
-# ============================================================
 # GAUSSIAN MEMBERSHIP FUNCTION (100% ORIGINAL CALCULATION)
-# ============================================================
 
 def gaussmf(x, params):
     sigma = float(params[0])
@@ -216,10 +203,7 @@ def evaluate_anfis(raw_values):
 
     prediction = float(np.clip(prediction, 0.0, 1.0))
     return prediction, x, rule_strengths
-
-# ============================================================
 # SIDEBAR CONTROLS & MODEL METRICS
-# ============================================================
 
 with st.sidebar:
     st.markdown("### 🩺 Dr. Cardio's Control Panel")
@@ -239,10 +223,7 @@ with st.sidebar:
 
     st.divider()
     st.caption("Powered by Fuzzy Logic")
-
-# ============================================================
 # HEADER WITH ASSISTANT INTRODUCTION
-# ============================================================
 
 st.markdown("""
     <div class="assistant-card">
@@ -252,10 +233,7 @@ st.markdown("""
         </p>
     </div>
 """, unsafe_allow_html=True)
-
-# ============================================================
 # SIMPLIFIED TYPE GUIDE EXPANDER
-# ============================================================
 
 with st.expander("📖 Beginner-Friendly Parameter & Type Guide", expanded=False):
     st.markdown("""
@@ -275,9 +253,7 @@ with st.expander("📖 Beginner-Friendly Parameter & Type Guide", expanded=False
       * `3` (Other): Miscellaneous flow patterns.
     """)
 
-# ============================================================
 # INTERACTIVE SLIDER INPUTS (INSTANT EVALUATION - NO BUTTON NEEDED)
-# ============================================================
 
 st.markdown("### 🎚️ Adjust Patient Parameters (Live Evaluation)")
 
@@ -334,11 +310,7 @@ with col3:
             3: "3: Other"
         }[x]
     )
-
-# ============================================================
 # INSTANT ANFIS CALCULATION & RISK GAUGE DISPLAY
-# ============================================================
-
 try:
     raw_values = np.array([cp, thalach, oldpeak, exang, ca, thal], dtype=float)
     prediction, normalized, rule_strengths = evaluate_anfis(raw_values)
@@ -378,9 +350,7 @@ try:
 except Exception as e:
     st.error(f"Prediction error: {e}")
 
-# ============================================================
 # DR. CARDIO CHATBOT (COLOURFUL & INTERACTIVE)
-# ============================================================
 
 st.markdown("---")
 st.markdown("### 💬 Chat with Dr. Cardio 🩺")
@@ -455,9 +425,7 @@ if prompt := st.chat_input("Ask Dr. Cardio about diet, exercise, or heart health
                 else:
                     st.error(f"Error communicating with Gemini API: {e}")
 
-# ============================================================
 # FOOTER
-# ============================================================
 
 st.markdown("---")
 st.markdown(
